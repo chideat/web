@@ -1,0 +1,43 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #ADADAD;
+    overflow: hidden;
+}
+
+#nav {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 150px;
+    padding-top: 10px;
+    overflow: auto;
+}
+
+#nav ul {
+    list-style: none outside none;
+    padding: 0;
+    margin: 0
+}
+
+#nav ul li {
+    display: block;
+    margin: 10px 0 10px 20px;
+    cursor: pointer;
+}
+
+#target {
+    position: absolute;
+    left: 150px;
+    top: 60px;
+    right: 0;
+    bottom: 0;
+    margin-left: 10px;
+}
+
+#target .thumb {
+    float: left;
+    margin: 0 10px 10px 0;
+}
+
