@@ -285,6 +285,39 @@ def r_move(db):
     query(db, sql)
     return 'success'
 
+@app.route('/r_merge', method='POST')
+def r_merge(db):
+    if 'from' not in request.params.keys() and 'to' not in request.params.keys():
+        return 'from where to where?'
+    _from_cate = request.params['from']
+    _to_cate = request.params['to']
+    if _from_cate == _to_cate:
+        return 'from self to self'
+    Home = os.path.expanduser('~') + '/Data'
+    Temp = '%s/Temp' % (Home)
+    Thumb = '%s/Thumb' % Home
+    _from = '%s/%s' % (Temp, _from_cate)
+    _to = '%s/%s' % (Temp, _to_cate)
+    _from_thumb = '%s/%s' % (Thumb, _from_cate)
+    _to_thumb = '%s/%s' % (Thumb, _to_cate)
+
+    # update database: rename category, rewrite path
+    sql = 'select id, path from thumb where category="%s"' % _from_cate
+    sql_2 = 'update thumb set path="%s" where id=%s'
+    for i in query(db, sql):
+        i['path'] = '/%s%s' % (_to_cate, i['path'][i['path'].rfind('/'):])
+        query(db, sql_2 % (i['path'], i['id']))
+    sql_3 = 'update thumb set category="%s" where category="%s"' % (_to_cate, _from_cate)
+    query(db, sql_3)
+    
+    # move files to correct path
+    # check if exists, then use shell command to move
+    os.system('mkdir -p %s && mv %s/* %s && rmdir %s' % (_to, _from, _to, _from))
+    os.system('mkdir -p %s && mv %s/* %s && rmdir %s' % (_to_thumb, _from_thumb, _to_thumb, _from_thumb))
+
+    return 'success'
+
+
 @app.route('/r_tar', method='POST')
 def r_tar(db):
     if 'cate' not in request.params.keys():

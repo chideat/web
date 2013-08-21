@@ -4,6 +4,7 @@
     <meta charset='UTF-8'>
     <link rel='stylesheet' href='/Public/css/thumb.css' type='text/css' />
     <script type='text/javascript' src='/Public/js/jquery.min.js'></script>
+    <script type='text/javascript' src='/Public/js/jquery-ui.min.js'></script>
     <script type='text/javascript' src='/Public/js/waterfall.js'></script>
 </head>
 <body>
@@ -36,6 +37,48 @@
 <script type='text/javascript'>
     var start = 0;
     $(document).ready(function() {
+        $(document).on('contextmenu', '.cate', function(e) {
+            e.preventDefault();
+            if($('#category').find('.ch_box').length != 0) {
+                $('#category').find('.ch_box').remove();
+                return;
+            }
+            var cate = $(this);
+            cate.after("<div class='ch_box'>"
+                + "<div class='line'>From:<del> "+ cate.attr('data') +"</del></div>"
+                + "<div class='line'>To: <input type='text' name='cate' class='ch_cate' list='_1234' value='"+ cate.attr('data') +"' from='"+cate.attr('data')+"'>"
+                + "<datalist id='_1234' class='_cate'></div>"
+                + "<button class='ch_ok'>OK</button></div>");
+            $.ajax({
+                type: 'GET',
+                url: '/r_cates2', 
+                dataType: 'json',
+                success: function(data, textStatus){
+                    $('#category').find('._cate').empty();
+                    for (var i = 0; i < data.length; i++) {
+                        $('#category').find('._cate').append('<option value="'+ data[i] +'"></option>');
+                    }
+                },
+                error: function(XMLHttpRequest, textStatus){
+                    alert(textStatus);
+                }
+            });
+        })
+        .on('click', '.ch_ok', function(){
+            $.ajax({
+                type: 'POST',
+                url: '/r_merge',
+                dataType: 'text',
+                data: {'from': $('#category .ch_box .ch_cate').attr('from'), 'to': $('#category .ch_box .ch_cate').val()},
+                success: function(data, textStatus) {
+                    alert(data);
+                },
+                error: function(XMLHttpRequest, textStatus) {
+                    alert(textStatus);
+                }
+            });
+        });
+
         function load_cates(cate) {
             $('#category').empty();
             $.ajax({
@@ -48,7 +91,6 @@
                     });
                     if (cate != null)  {
                         $('#category li[data='+cate+']').addClass('selected').css({'background-color': '#FFFFFF'});
-                        //load();
                     }
                 },
                 error: function(XMLHttpRequest, textStatus, errorThrown) {
@@ -99,10 +141,15 @@
         load_stat();
 
         $('#category').on('click', '.cate', function(){
+            $('#category').find('.ch_box').remove();
             $('.cate').removeClass('selected').css({'background-color': '#ADADAD'});
             $(this).addClass('selected').css({'background-color': '#FFFFFF'});
             $('.notify span').text($('.selected').attr('data'));
             load();
+        })
+        .on('dbclick', 'input', function(e) {
+            e.stopPropagation();
+
         });
 
         $('#target').on('click', '.thumb', function(){

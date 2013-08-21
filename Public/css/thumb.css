@@ -25,6 +25,25 @@ body {
     display: block;
     margin: 10px 0 10px 20px;
     cursor: pointer;
+    -webkit-user-select: none;
+}
+
+#nav ul>div {
+    display: block;
+    margin: 0;
+}
+
+#nav ul input{
+    width: 100px;
+}
+
+#nav ul>div>.line {
+    float: left;
+    clear: both;
+}
+
+#nav ul>div .ch_ok {
+    margin-left: 95px;
 }
 
 #menu {
