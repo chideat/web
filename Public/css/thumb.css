@@ -1,0 +1,109 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #ADADAD;
+    overflow: hidden;
+}
+
+#nav {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 150px;
+    padding-top: 10px;
+    overflow: auto;
+}
+
+#nav ul {
+    list-style: none outside none;
+    padding: 0;
+    margin: 0
+}
+
+#nav ul li {
+    display: block;
+    margin: 10px 0 10px 20px;
+    cursor: pointer;
+}
+
+#menu {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 160px;
+    height: 55px;
+}
+
+#menu .label {
+    float: left;
+    font: 20px Arial;
+    margin: 15px 0 0 30px;
+}
+
+#menu .notify {
+    float: right;
+    height: 30px;
+    margin: 15px 30px 0 0;
+}
+
+#content {
+    position: fixed;
+    left: 160px;
+    top: 60px;
+    right: 0px;
+    bottom: 10px;
+    overflow: auto;
+    border-top: solid 2px black;
+}
+
+#content ul {
+    list-style: none outside none;
+    padding: 0;
+    margin: 0;
+    overflow: auto;
+}
+
+#content ul .thumb {
+    display: block;
+    float: left;
+    margin: 5px 15px 15px 5px;
+    cursor: pointer;
+}
+
+#wrap {
+    position: absolute;
+    left:0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 36;
+    background-color: rgba(0, 0, 0, 0.7);
+    overflow: auto;
+}
+
+#wrap .wrap_ {
+    margin-top: 3%;
+    margin-left: -webkit-calc((100% - 454px) / 2);
+    width: 454px;
+}
+
+#wrap .wrap_ div {
+    float: left;
+    clear: both;
+}
+
+#wrap .wrap_ .image {
+    cursor: pointer;
+}
+
+#wrap .wrap_ .exit {
+    text-align: center;
+    width: 100%;
+    height: 20px;
+    background-color: #AFAFAF;
+    border-radius: 1em;
+    padding-top: 5px;
+    cursor: pointer;
+    -webkit-user-select: none;
+}

@@ -1,0 +1,223 @@
+<!DOCTYPE>
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <link rel='stylesheet' href='/Public/css/jquery.Jcrop.css' type='text/css' />
+    <link rel='stylesheet' href='/Public/css/crop.css' type='text/css' />
+    <script type='text/javascript' src='/Public/js/jquery.min.js'></script>
+    <script type='text/javascript' src='/Public/js/jquery.Jcrop.js'></script>
+</head>
+<body>
+    <div id='nav'>
+        <ul id='category'>
+        </ul>
+    </div>
+    <div id='menu'>
+        <table>
+            <tr><td><br/></td></tr>
+            <tr><td><br/></td></tr>
+            <tr><td><br/></td></tr>
+            <tr><td><br/></td></tr>
+            <tr><td><br/></td></tr>
+            <tr><td><br/></td></tr>
+            <tr><td colspan=2>(<span id='x'>0</span>,<span id='y'>0</span>)</td></tr>
+            <tr><td colspan=2>(<span id='x2'>0</span>,<span id='y2'>0</span>)</td></tr>
+            <tr><td><br/></td></tr>
+            <tr><td colspan=2><hr></td></tr>
+            <tr><td><label for='w'>W</label></td><td><input type='text' name='w' id='w' value=908 /></td></tr>
+            <tr><td><label for='h'>H</label></td><td><input type='text' name='h' id='h' value=1612 /></td></tr>
+            <tr><td colspan=2><hr></td></tr>
+            <tr><td colspan=2>Category</td></tr>
+            <tr><td colspan=2><input type='text' name='category' id='cate-input' value='' list='_cate'/><datalist id='_cate'></datalist></td></tr>
+            <tr><td colspan=2><hr></td></tr>
+            <tr><td colspan=2><button name='crop' id='crop'>Crop</button></td></tr>
+            <tr><td colspan=2><button name='n_c' id='n_c'>N&C</button></td></tr>
+            <tr><td colspan=2><button name='next' id='next'>Next</button></td></tr>
+            <tr><td colspan=2><button name='skip' id='skip'>Drop</button></td></tr>
+        </table>
+    </div>
+    <div id='wrap'>
+        <img id='target' /> 
+    </div>
+</body> 
+<script type='text/javascript'>
+    var queue = new Array();
+    var start = 0;
+    var coor = {'x':0, 'y':0, 'w': 0, 'h': 0};
+    $(document).ready(function() {
+        $.ajax({
+            type: 'GET',
+            url: '/cates',
+            dataType: 'json',
+            success: function(data, textStatus) {
+                $.each(data, function(index, value) {
+                    $('#category').append('<li class="cate" data="' + value['category'] + '">' + value['category'] + ' [' + value['count'] +']</li>');
+                });
+            },
+            error: function(XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatux);
+            }
+        });
+
+        $.ajax({
+            type: 'GET',
+            url: '/_cates',
+            dataType: 'json',
+            success: function(data, textStatus) {
+                $('#_cate').empty();
+                $.each(data, function(index, value) {
+                    $('#_cate').append('<option value="'+ value +'"/>');     
+                });
+            },
+            error: function(XMLHttpRequest, textStatus, errorThrown) {
+                alert('_cates' + errorThrown);
+            }
+        });
+
+        // load targets
+        function load(init) {
+            var category = $('.selected').attr('data');
+            if (category != undefined && queue.length <= 1) {
+                $.ajax({
+                    type: 'GET',
+                    url: '/cate?cate=' + category + '&start=' + start,
+                    dataType: 'json',
+                    success: function(data, textStatus) {
+                        for(var i = 0; i < data['data'].length; i ++) {
+                            queue.push(data['data'][i]);
+                        }
+                        if (init)
+                            next();
+                    },
+                    error: function(XMLHttpRequest, textStatus, erorThrown) {
+                        alert(textStatus);
+                    }
+                }); 
+            }
+        }
+
+        function draw(src) {
+            var width = Number($('#w').val());
+            var height = Number($('#h').val());
+            var ratio = width/height;
+            $('#wrap').empty().append('<img id="target" src="' + src + '"/>');
+            // $('#target').attr('src', src);
+            $('#target').Jcrop({
+                boxWidth: $('#wrap').width() - 10,
+                boxHeight: $('#wrap').height() - 10,
+                onSelect: onSelect,
+                onChange: onChange,
+                setSelect: [0, 0, width, height],
+                aspectRatio: ratio,
+                minSize: [200*ratio, 200]
+                //maxSize: [width, height]
+            });
+        }
+
+        function next() {
+            var src = queue.shift();
+            if (src == undefined) {
+                alert('No more images');
+                return;
+            }
+            src = '/Upload' + src;
+            draw(src);
+
+        }
+
+        function onSelect(c) {
+            coor['x'] = Math.round(c.x);
+            coor['y'] = Math.round(c.y);
+            coor['x2'] = Math.round(c.x2);
+            coor['y2'] = Math.round(c.y2);
+            coor['w'] = Math.round(Number($('#w').val()));
+            coor['h'] = Math.round(Number($('#h').val()));
+            coor['cate'] = $('#cate-input').val();
+        }
+
+        function onChange(c) {
+            $('#x').text(Math.round(c.x));
+            $('#y').text(Math.round(c.y));
+            $('#x2').text(Math.round(c.x2));
+            $('#y2').text(Math.round(c.y2));
+        }
+       
+        $('#category').on('click', '.cate', function(){
+            $('.cate').removeClass('selected').css({'background-color': '#ADADAD'});
+            $(this).addClass('selected').css({'background-color': '#BDBDBD'});
+            queue = new Array();
+            start = 0;
+            load(true);
+            $('#cate-input').val($(this).attr('data'));
+        });
+
+        $('#n_c,#crop, #next').on('click', function(){
+            // send coordinate to server
+            coor['crop'] = '1'
+            // if ($(this).attr('id') == 'next') {
+            //     coor['crop'] = '0'
+            // }
+            if ($(this).attr('id') != 'next') {
+                coor['src'] = $('#target').attr('src');
+                if(coor['src'] != undefined) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '/crop',
+                        dataType: 'text',
+                        data: coor,
+                        success: function() {
+                            return true;
+                        },
+                        error: function(XMLHttpRequest, textStatus, errorThrown) {
+                            alert(coor['src'] + ' process failed' + errorThrown);
+                        }
+                    });
+                }
+            }
+            if ($(this).attr('id') != 'crop') {
+                next();
+                load(false);
+            }
+        });
+
+        $('#skip').on('click', function(){
+            var src = $('#target').attr('src');
+            if (src != undefined) {
+                $.ajax({
+                    type: 'POST',
+                    url: '/skip',
+                    dataType: 'text',
+                    data: {'src': src},
+                    success: function() {
+                        return true;
+                    },
+                    error: function(XMLHttpRequest, textStatus, errorThrown) {
+                        alert('skip error' + errorThrown);
+                    }
+                });
+            }
+            next();
+        });
+
+        $('#cate-input').change(function() {
+            var cate = $(this).val().toLowerCase();
+            coor['cate'] = cate;
+            if (cate == '')
+                return
+            var flag=true;
+            $('#_cate option').each(function(){
+                if ($(this).attr('value') == cate) 
+                    flag = false;
+            });
+            if (flag)
+                $('#_cate').append('<option value="'+ cate +'"/>')
+        });
+
+        $('#w,#h').change(function() {
+            var src = $('#target').attr('src');
+            draw(src);
+        });
+
+    });
+</script>
+</html>

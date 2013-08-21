@@ -1,0 +1,177 @@
+<!DOCTYPE>
+<html>
+<head>
+    <meta charset='UTF-8'>
+    <link rel='stylesheet' href='/Public/css/thumb.css' type='text/css' />
+    <script type='text/javascript' src='/Public/js/jquery.min.js'></script>
+    <script type='text/javascript' src='/Public/js/waterfall.js'></script>
+</head>
+<body>
+    <div id='nav'>
+        <ul id='category'>
+        </ul>
+    </div>
+    <div id='menu'>
+        <div class='label'>当前数目: <span class='total'>0</span></div>
+        <button class='button notify'>打包 <span>&</span> 通知</button>
+    </div>
+    <div id='content'>
+        <ul id='target'>
+        </ul>
+    </div>
+    <div id='wrap' style='display: none;'>
+        <div class='wrap_'>
+            <div class='image'></div>
+            <div class='action'>
+                <form action='/r_move' method='post'>
+                    <input type='text' name='cate' value='' class='cate' list='_cate'/><datalist id='_cate'></datalist>
+                    <input type='text' hidden='hidden' name='path' class='path' />
+                    <button class='submit'>OK</button>
+                </form>
+            </div>
+            <div class='exit'>Exit</div>
+        </div>
+    </div>
+</body> 
+<script type='text/javascript'>
+    var start = 0;
+    $(document).ready(function() {
+        function load_cates(cate) {
+            $('#category').empty();
+            $.ajax({
+                type: 'GET',
+                url: '/r_cates',
+                dataType: 'json',
+                success: function(data, textStatus) {
+                    $.each(data, function(index, value) {
+                        $('#category').append('<li class="cate" data="' + value['category'] + '">' + value['category'] + ' [' + value['count'] +']</li>');
+                    });
+                    if (cate != null)  {
+                        $('#category li[data='+cate+']').addClass('selected').css({'background-color': '#FFFFFF'});
+                        //load();
+                    }
+                },
+                error: function(XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus);
+                }
+            });
+        }
+      
+        function load_stat() {
+            $.ajax({
+                type:'GET',
+                url: '/r_stat',
+                dataType: 'json',
+                success: function(data, textStatus) {
+                    $('#menu .total').text(data['count']);  
+                },
+                error: function(XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus);
+                }
+            });
+        }
+
+        // load
+        function load() {
+            var category = $('.selected').attr('data');
+            $.ajax({
+                type: 'GET',
+                url: '/r_cate?cate=' + category + '&start=' + start,
+                dataType: 'json',
+                success: function(data, textStatus) {
+                    $('#target').empty();
+                    for (var i = 0; i < data['data'].length; i++) {
+                        $('#target').append(""
+                            + "<li class='thumb' data='" + data['data'][i] + "'>"
+                            + "<img src='/Thumb"  + data['data'][i] + "' />"
+                            + "</li>"
+                        );
+                        start ++;
+                    }
+                },
+                error: function(XMLHttpRequest, textStatus, erorThrown) {
+                    alert(textStatus);
+                }
+            });
+        }
+
+        load_cates(null);
+        load_stat();
+
+        $('#category').on('click', '.cate', function(){
+            $('.cate').removeClass('selected').css({'background-color': '#ADADAD'});
+            $(this).addClass('selected').css({'background-color': '#FFFFFF'});
+            $('.notify span').text($('.selected').attr('data'));
+            load();
+        });
+
+        $('#target').on('click', '.thumb', function(){
+            $.ajax({
+                type: 'GET',
+                url: '/r_cates2', 
+                dataType: 'json',
+                success: function(data, textStatus){
+                    $('#_cate').empty();
+                    for (var i = 0; i < data.length; i++) {
+                        $('#_cate').append('<option value="'+ data[i] +'"></option>');
+                    }
+                },
+                error: function(XMLHttpRequest, textStatus){
+                    alert(textStatus);
+                }
+            });
+            $('#wrap').show()
+            .find('.image').empty().append('<img src="/Temp' + $(this).attr('data') + '" width=454 height=806/>')
+            .parent()
+            .find('.cate').val($('#category .selected').attr('data'))
+            .parent()
+            .find('.path').val($(this).attr('data'));
+        });
+
+        $('#wrap').on('click', '.exit, .image', function() {
+            $('#wrap').hide().find('.image').empty();
+        })
+        .on('click', '.submit', function() {
+            var cate = $('#wrap .cate').val(),
+                path = $('#wrap .path').val(),
+                o_cate = $('.selected').attr('data');
+            $.ajax({
+                type: 'POST',
+                url: '/r_move',
+                dataType: 'text',
+                data: {'cate': cate, 'path': path},
+                success: function(data, textStauts) {
+                    $('.exit').click();
+                    load_cates(o_cate);
+                    load_state();
+                    alert($('#target .thumb[data='+path+']').html());
+                },
+                error: function(XMLHttpRequest, textStatus) {
+                    alert(textStatus);
+                }
+            });
+            return false;
+        });
+
+        $('.notify').on('click', function(){
+            var cate = $('.selected').attr('data');
+            if (!cate)  {
+                alert('no cate selected');
+                return;
+            }
+            $.ajax({
+                type: 'POST',
+                url: '/r_tar',
+                dataType: 'text',
+                data: {'cate': cate},
+                success: function(data, textStatus) {
+                    alert(data);
+                },
+                error: function(XMLHttpRequest, textStatus) {
+                    alert(textStatus);
+                }
+            });
+        });
+    });
+</script>
+</html>

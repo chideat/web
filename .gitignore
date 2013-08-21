@@ -1,0 +1,8 @@
+*.sh
+*.pyc
+tmp*
+test*
+*.swp
+data/
+cache
+logs
