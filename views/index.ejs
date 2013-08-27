@@ -1,11 +1,23 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML>
 <html>
   <head>
+    <meta charset='UTF-8'>
     <title><%= title %></title>
-    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script type='text/javascript' src='/socket.io/socket.io.js'></script>
   </head>
   <body>
-    <h1><%= title %></h1>
-    <p>Welcome to <%= title %></p>
+    <div id="nav" style="text-align: center;">
+      <!--
+      <a href='/content/crop.html'>裁剪</a>
+      <a href='/content/thumb.html'>结果预览</a>
+      -->
+    </div>
+    <script type='text/javascript'>
+      var socket = io.connect('http://127.0.0.1:3000');
+      socket.on('data', function(data) {
+        console.log(data);
+      });
+      socket.emit('new request', {target: 'more'});
+    </script>
   </body>
 </html>

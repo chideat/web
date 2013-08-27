@@ -4,12 +4,13 @@
  */
 
 var express = require('express');
-var routes = require('./routes');
-var user = require('./routes/user');
-var http = require('http');
-var path = require('path');
+var app = express(),
+    server = require('http').createServer(app),
+    io = require('socket.io').listen(server),
+    path = require('path'),
+    routes = require('./routes'),
+    user = require('./routes/user');
 
-var app = express();
 
 // all environments
 app.set('port', process.env.PORT || 3000);
@@ -30,6 +31,14 @@ if ('development' == app.get('env')) {
 app.get('/', routes.index);
 app.get('/users', user.list);
 
-http.createServer(app).listen(app.get('port'), function(){
-  console.log('Express server listening on port ' + app.get('port'));
+server.listen(app.get('port'), function(){
+  console.log('Picture Crop System listening on port ' + app.get('port'));
+});
+
+io.sockets.on('connection', function(socket) {
+    socket.emit('data', {hello: 'hello'});
+    socket.on('new request', function(data) {
+        console.log('new request', data);
+        socket.emit('data', {hello: 'world'});
+    });
 });
