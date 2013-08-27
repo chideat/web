@@ -333,19 +333,20 @@ def r_tar(db):
         return '%s not exist' % cate
     if not os.path.exists(_to):
         os.makedirs(_to)
-    sql = 'update thumb set state=1 where path="%s"'
+    sql = 'update thumb set state=1 where category="%s"'
     for item in os.listdir(_from):
         try:
             os.rename('%s/%s' % (_from, item), '%s/%s' % (_to, item))
             subfix = '/%s/%s' % (cate, item)
-            query(db, sql % subfix)
+            # query(db, sql % subfix)
+            # print sql % subfix
         except:
             continue
+    query(db, sql % cate)
     # send mail
     print 'Sending mail'
-    subject = 'IOS7壁纸分类%s 已处理' % cate
+    subject = 'IOS7壁纸'
     body = '分类 %s 已处理，可以上传。<br />路径: %s' % (cate, _to)
-    #_to = ['chinaxiahaifeng@gmail.com']
     _to = ['chinaxiahaifeng@gmail.com']
     mail(_to, subject, body)
     # update database
