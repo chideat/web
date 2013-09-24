@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # -*- coding: UTF-8 -*-
 
 import os
@@ -94,7 +94,8 @@ def _crop(db, data):
                 croped = croped.resize((data['w'],data['h']), Image.BILINEAR)
             croped.save(save);
             # thumb
-            croped.thumbnail((227, 403))
+            # croped.thumbnail((227, 403))
+            croped.thumbnail((248, 464))
             croped.save(save_thumb)
             #  update thumb db
             sql = 'insert into thumb (category, path) values ("%s", "%s")' % (cate, '/%s/%s.jpg' % (cate, pic_name))
@@ -312,8 +313,8 @@ def r_merge(db):
     
     # move files to correct path
     # check if exists, then use shell command to move
-    os.system('mkdir -p %s && mv %s/* %s && rmdir %s' % (_to, _from, _to, _from))
-    os.system('mkdir -p %s && mv %s/* %s && rmdir %s' % (_to_thumb, _from_thumb, _to_thumb, _from_thumb))
+    os.system('mkdir -p "%s" && mv "%s"/* "%s" && rmdir "%s"' % (_to, _from, _to, _from))
+    os.system('mkdir -p "%s" && mv "%s"/* "%s" && rmdir "%s"' % (_to_thumb, _from_thumb, _to_thumb, _from_thumb))
 
     return 'success'
 
@@ -330,6 +331,7 @@ def r_tar(db):
     _from = '%s/%s' % (Temp, cate)
     _to = '%s/%s' % (Fin, cate)
     if not os.path.exists(_from):
+        print _from
         return '%s not exist' % cate
     if not os.path.exists(_to):
         os.makedirs(_to)
